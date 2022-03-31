@@ -3,7 +3,6 @@ const bookModel = require('../models/bookModel')
 const reviewModel = require("../models/reviewModel")
 const validate = require('../validator/validators')
 
-///////////////////   Review   /////////////////////////
 const addReview = async (req, res) => {
     try {
         let reviewData = req.body
@@ -58,8 +57,7 @@ const addReview = async (req, res) => {
         delete newData2.updatedAt
         delete newData2.__v
 
-        let checkRevCount = await reviewModel.find({ bookId: bookID, isDeleted: false }).count()
-        let updatedBook = await bookModel.findOneAndUpdate({ _id: bookID, isDeleted: false }, { $set: { reviews: checkRevCount } }, { new: true })
+        let updatedBook = await bookModel.findOneAndUpdate({ _id: bookID, isDeleted: false }, { $inc: { reviews: 1 } }, { new: true })
 
         return res.status(201).send({
             status: true, message: "Success",
@@ -71,8 +69,6 @@ const addReview = async (req, res) => {
     }
 }
 
-
-//=====================================================================================================
 
 const updateReview = async (req, res) => {
 
@@ -153,10 +149,6 @@ const updateReview = async (req, res) => {
 }
 
 
-
-//=====================================================================================================
-
-
 const deleteReview = async (req, res) => {
     try {
         if (!validate.isValidObjectId(req.params.bookId)) {
@@ -170,12 +162,12 @@ const deleteReview = async (req, res) => {
             return res.status(400).send({ status: false, message: 'Book not exist ' })
         }
         const deleteReview = await reviewModel.findOneAndUpdate({ _id: req.params.reviewId, isDeleted: false }, { isDeleted: true })
-        if (deleteReview['bookId'] != req.params.bookId) {
-            return res.status(400).send({ status: false, message: "This review dosent belong To given Book Id" })
-        }
         if (deleteReview) {
-            count = deleteReview.length
-            await bookModel.findByIdAndUpdate({ _id: req.params.bookId }, { reviews: count })
+            if (deleteReview['bookId'] != req.params.bookId) {
+                return res.status(400).send({ status: false, message: "This review dosent belong To given Book Id" })
+            }
+            
+            await bookModel.findByIdAndUpdate({ _id: req.params.bookId }, { $inc: { reviews: -1 } })
             return res.status(200).send({ status: true, message: "review is deleted successfully" })
         }
         return res.status(400).send({ status: false, message: 'review not exist' })

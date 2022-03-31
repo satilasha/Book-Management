@@ -4,8 +4,6 @@ const validate = require('../validator/validators')
 const jwt = require('jsonwebtoken')
 
 
-////       USER CREATION     /////
-
 const createUser = async function (req, res) {
     let requestBody = req.body;
     try {
@@ -61,19 +59,18 @@ const createUser = async function (req, res) {
         if (!(validate.isValidPassword(password.trim()))) {
             return res.status(400).send({ status: false, message: `password length should be betwwen 8-15` })
         }
-                if (!validate.isValidPincode(address.pincode.trim())) {
-            res.status(400).send({ status: false, message: `pincode is not valid` })
-            return
+        if (Object.keys(requestBody.address).includes("pincode")) {
+            if (!validate.isValidPincode(address.pincode.trim())) {
+                res.status(400).send({ status: false, message: `pincode is not valid` })
+                return
+            }
         }
-
         let user = await userModel.create(req.body)
         return res.status(201).send({ status: true, message: 'Success', data: user })
     } catch (error) {
         res.status(500).send({ status: false, msg: error.message })
     }
 }
-
-//////  USER LOGIN  /////////////
 
 
 const loginUser = async function (req, res) {

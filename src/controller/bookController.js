@@ -5,7 +5,7 @@ const userModel = require('../models/userModel')
 const validate = require('../validator/validators')
 const reviewModel = require('../models/reviewModel')
 
-/////////       CREATE BOOK      //////////
+
 
 const createBook = async (req, res) => {
 
@@ -73,10 +73,6 @@ const createBook = async (req, res) => {
 
 };
 
-//===========================================================================================
-
-
-////////////            GET BOOK DETAILS           /////////////////
 
 
 const getBook = async function (req, res) {
@@ -109,13 +105,6 @@ const getBook = async function (req, res) {
 }
 
 
-// ================================================================================================
-
-
-/////////////        GET  BOOK DETAILS WITH REVIEW        ////////////////////
-
-
-
 const getBookWithreview = async (req, res) => {
 
     try {
@@ -142,8 +131,6 @@ const getBookWithreview = async (req, res) => {
     }
 }
 
-
-// ================================================================================================
 
 let updateBook = async function (req, res) {
     try {
@@ -203,11 +190,6 @@ let updateBook = async function (req, res) {
         res.status(500).send({ status: false, msg: error.message })
     }
 }
-
-
-
-////////////   BOOK DELETED BY ID    //////////////////////
-
 
 const deletedById = async function (req, res) {
     try {
