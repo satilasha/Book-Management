@@ -7,7 +7,7 @@ const addReview = async (req, res) => {
     try {
         let book_id = req.params.bookId
         if (!validate.isValidObjectId(book_id)) {
-            return res.status(400).send({ status: false, message: "Please Enter a valid Book Id" })
+            return res.status(400).send({ status: false, message: "Please enter a valid Book Id" })
         }
         if (!validate.isValidRequestBody(req.body)) {
             return res.status(400).send({ status: false, message: "Please enter review data for review" })
@@ -41,7 +41,7 @@ const addReview = async (req, res) => {
             return res.status(400).send({ status: false, message: "Rating is required" })
         }
         if (!(rating >= 1 && rating <= 5)) {
-            return res.status(400).send({ status: false, message: "Invalid Rating! please rate in beetween 1 to 5" })
+            return res.status(400).send({ status: false, message: "Invalid Rating! please rate in between 1 to 5" })
         }
         if (!validate.isValid(review)) {
             return res.status(400).send({ status: false, message: "Please Enter A Valid Review" })
@@ -53,7 +53,7 @@ const addReview = async (req, res) => {
         }
         const finalData = { bookId, reviewedBy, reviewedAt, rating, review }
         let newReview = await reviewModel.create(finalData)
-        let addedReview = { ...newReview.toObject() }
+        let addedReview = newReview.toObject()
         delete addedReview.createdAt
         delete addedReview.updatedAt
         delete addedReview.__v
@@ -134,7 +134,7 @@ const updateReview = async (req, res) => {
             { $set: updateData },
             { new: true })
 
-        let finalReview = { ...updatedReview.toObject() }
+        let finalReview = updatedReview.toObject()
         delete finalReview.createdAt
         delete finalReview.updatedAt
         delete finalReview.__v
@@ -158,12 +158,14 @@ const deleteReview = async (req, res) => {
         if (!book) {
             return res.status(404).send({ status: false, message: 'Book not found ' })
         }
-        const deleteReview = await reviewModel.findOneAndUpdate({ _id: req.params.reviewId, isDeleted: false }, { isDeleted: true })
+        const deleteReview = await reviewModel.findOneAndUpdate(
+            { _id: req.params.reviewId, isDeleted: false },
+            { $set: { isDeleted: true } },
+            { new: true });
         if (deleteReview) {
             if (deleteReview.bookId != req.params.bookId) {
-                return res.status(400).send({ status: false, message: "This review dosent belong To given Book Id" })
+                return res.status(400).send({ status: false, message: "This review dosent belong to the given Book Id" })
             }
-
             await bookModel.findByIdAndUpdate({ _id: req.params.bookId }, { $inc: { reviews: -1 } })
             return res.status(200).send({ status: true, message: "Review is deleted successfully" })
         }

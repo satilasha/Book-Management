@@ -35,6 +35,9 @@ const createBook = async (req, res) => {
         if (!validate.isValid(excerpt)) {
             return res.status(400).send({ status: false, message: "Excerpt Is Requird" })
         }
+        if (!validate.isValid(ISBN.trim())) {
+            return res.status(400).send({ status: false, message: "Invalid ISBN Enterd" })
+        }
         if (!validate.isValidISBN(ISBN.trim())) {
             return res.status(400).send({ status: false, message: "Invalid ISBN Enterd" })
         }
@@ -123,7 +126,7 @@ const getBookWithreview = async (req, res) => {
         if (tempbook) {
             let reviews = await reviewModel.find({ bookId: req.params.bookId, isDeleted: false }).select({ bookId: 1, reviewedBy: 1, reviewedAt: 1, rating: 1, review: 1 })
             let reviewCount = reviews.length
-            if (reviewCount > 0) {
+            if (reviewCount != 0) {
                 tempbook.reviews = reviewCount
                 return res.status(200).send({
                     status: true, message: 'Booklist', data: { ...tempbook.toObject(), reviewData: reviews }
@@ -181,7 +184,7 @@ let updateBook = async function (req, res) {
             if (!validate.isValidISBN(req.body.ISBN.trim())) {
                 return res.status(400).send({ status: false, message: "Invalid ISBN Enterd" })
             }
-            const duplicateISBN = await bookModel.findOne({ title: req.body.ISBN })
+            const duplicateISBN = await bookModel.findOne({ ISBN: req.body.ISBN })
             if (duplicateISBN)
                 return res.status(400).send({ status: false, message: "ISBN is already present" })
         }
@@ -212,8 +215,9 @@ const deletedById = async function (req, res) {
             return res.status(400).send({ status: false, message: "Book id is not valid" })
         }
         let filterDetails = {
-            isDeleted: false,
-            _id: req.params.bookId
+            _id: req.params.bookId,
+            isDeleted: false
+
         }
         const book = await bookModel.findOne(filterDetails)
         if (!book) {
@@ -223,12 +227,18 @@ const deletedById = async function (req, res) {
             return res.status(403).send({ satus: false, message: `Unauthorized access! Owner info doesn't match` })
 
         }
-        const deletedBook = await bookModel.findOneAndUpdate(filterDetails, { isDeleted: true, deletedAt: new Date() })
+        const deletedBook = await bookModel.findOneAndUpdate(
+            filterDetails,
+            { isDeleted: true, deletedAt: new Date() },
+            { new: true });
+
         if (deletedBook) {
-            await reviewModel.updateMany({ bookId: req.params.bookId }, { isDeleted: true, deletedAt: new Date() })
+            await reviewModel.updateMany(
+                { bookId: req.params.bookId },
+                { isDeleted: true, deletedAt: new Date() },
+                { new: true });
             return res.status(200).send({ status: true, message: 'Book is successfully deleted' })
         }
-
     } catch (error) {
         res.status(500).send({ status: false, message: error.message })
     }
