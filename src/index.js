@@ -5,10 +5,12 @@ const bodyParser = require('body-parser');
 const route = require('./routes/route.js');
 const { default: mongoose } = require('mongoose');
 const app = express();
+const multer = require('multer')
 
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(multer().any())
 
 
 mongoose.connect("mongodb+srv://shailesh123:rYbeOdoWZtY9NdKU@cluster0.e1ege.mongodb.net/Group2-Database?retryWrites=true&w=majority", {
@@ -26,4 +28,3 @@ app.listen(process.env.PORT || 3000, function () {
 
 
 
-// mongodb+srv://shailesh123:rYbeOdoWZtY9NdKU@cluster0.e1ege.mongodb.net/Group2-Database?retryWrites=true&w=majority

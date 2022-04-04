@@ -3,37 +3,37 @@ const bookSchema = new mongoose.Schema({
 
     title: {
         type: String,
-        required: [true,'title is required'],
+        required: [true, 'title is required'],
         trim: true,
         unique: true,
-        lowercase:true
+        lowercase: true
     },
     excerpt: {
         type: String,
         trim: true,
-        required: [true,'excerpt is required']
+        required: [true, 'excerpt is required']
     },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
-        required: [true,'userId is required'],
+        required: [true, 'userId is required'],
         trim: true,
         refs: 'User'
     },
     ISBN: {
         type: String,
-        requireed: [true,'ISBN is required'],
+        requireed: [true, 'ISBN is required'],
         trim: true,
         unique: true
     },
     category: {
         type: String,
         trim: true,
-        required: [true,'category is required']
+        required: [true, 'category is required']
     },
     subcategory: {
         type: [],
         trim: true,
-        required: [true,'subcategory is required']
+        required: [true, 'subcategory is required']
     },
     reviews: {
         type: Number,
@@ -51,10 +51,10 @@ const bookSchema = new mongoose.Schema({
     },
     releasedAt: {
         type: Date,
-        required: [true,"Release date is required"]// format("YYYY-MM-DD")
+        required: [true, "Release date is required"]// format("YYYY-MM-DD")
     },
-
-
-
+    bookCover: {
+        type: String
+    }
 }, { timestamps: true })
 module.exports = mongoose.model('Book', bookSchema)

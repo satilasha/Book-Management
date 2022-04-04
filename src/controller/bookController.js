@@ -2,6 +2,7 @@ const bookModel = require('../models/bookModel')
 const userModel = require('../models/userModel')
 const validate = require('../validator/validators')
 const reviewModel = require('../models/reviewModel')
+const aws = require("aws-sdk");
 
 /////////       CREATE BOOK      //////////
 
@@ -11,7 +12,7 @@ const createBook = async (req, res) => {
         if (!validate.isValidRequestBody(bookData)) {
             return res.status(400).send({ status: false, message: "Invalid parameters" })
         }
-        let { title, excerpt, userId, ISBN, category, subcategory, reviews, releasedAt } = req.body
+        let { title, excerpt, userId, ISBN, category, subcategory, reviews, releasedAt, bookCover } = req.body
         if (!validate.isValid(userId)) {
             return res.status(400).send({ status: false, message: "User Id required!" })
         }
@@ -65,7 +66,60 @@ const createBook = async (req, res) => {
         if (req.body.isDeleted === true) {
             return res.status(400).send({ status: false, message: "No Data Should Be Deleted At The Time Of Creation" })
         }
-        const newBook = await bookModel.create(bookData)
+
+
+
+        aws.config.update({
+            accessKeyId: "AKIAY3L35MCRVFM24Q7U",  // id
+            secretAccessKey: "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",  // secret password
+            region: "ap-south-1"
+        });
+
+
+        // this function uploads file to AWS and gives back the url for the file
+        let uploadFile = async (file) => {
+            return new Promise(function (resolve, reject) {
+
+                let s3 = new aws.S3({ apiVersion: "2006-03-01" });
+                var uploadParams = {
+                    ACL: "public-read",
+                    Bucket: "classroom-training-bucket", // HERE
+                    Key: "swatiGhosh/" + file.originalname, // HERE    
+                    Body: file.buffer,
+                };
+
+                s3.upload(uploadParams, function (err, data) {
+                    if (err) {
+                        return reject({ "error": err });
+                    }
+                    console.log("File uploaded successfully.");
+                    return resolve(data.Location); //HERE 
+                });
+            });
+        };
+
+        let uploadedFileURL
+        let files = req.files;
+        if (files && files.length > 0) {
+            uploadedFileURL = await uploadFile(files[0]);
+        }
+        else {
+            res.status(400).send({ status: false, msg: "No file to write" });
+        }
+
+        let finalData = {
+            title,
+            excerpt,
+            userId,
+            ISBN,
+            category,
+            subcategory,
+            reviews,
+            releasedAt,
+            bookCover: uploadedFileURL
+        }
+
+        const newBook = await bookModel.create(finalData)
         return res.status(201).send({ status: true, message: "Success", Data: newBook })
 
     } catch (error) {
